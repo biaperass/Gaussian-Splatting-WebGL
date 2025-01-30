@@ -70,6 +70,21 @@ function initGUI() {
     otherFolder.add(settings, 'debugDepth').name('Show Depth Map')
        .onChange(() => requestRender())
 
+    // Time evolution settings
+    const timeFolder = gui.addFolder('Time Evolution');
+    timeFolder.add(settings, 'showTimestep').name('Enable Timeline').onChange(() => requestRender());
+
+    // to control the slider's value
+    const sliderController = timeFolder.add(settings, 'timeStep', 0, 1, 0.5)
+        .name('Timeline')
+        .onChange(() => {
+            cam.needsWorkerUpdate = true;
+            requestRender();
+        });
+
+    // CSS personalizzato per lo slider
+    sliderController.domElement.querySelector('input').style.accentColor = '#ff4444';
+
     // Camera calibration folder
     addCameraCalibrationFolder(gui)
 

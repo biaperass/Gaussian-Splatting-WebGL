@@ -30,7 +30,12 @@ const settings = {
     // Camera calibration
     calibrateCamera: () => {},
     finishCalibration: () => {},
-    showGizmo: true
+    showGizmo: true,
+
+    // Slider for time evolution
+    timeStep : 0.5,
+    showTimestep : true,
+    sliderValue : 0.5
 }
 
 const defaultCameraParameters = {
@@ -207,6 +212,10 @@ function render(width, height, res) {
     gl.uniform3fv(gl.getUniformLocation(program, 'boxmax'), sceneMax)
     gl.uniformMatrix4fv(gl.getUniformLocation(program, 'projmatrix'), false, cam.vpm)
     gl.uniformMatrix4fv(gl.getUniformLocation(program, 'viewmatrix'), false, cam.vm)
+    // pass the value of the slider to the shader
+    gl.uniform1f(gl.getUniformLocation(program, 'sliderValue'), settings.sliderValue);
+    // pass the value of the showTimestep to the shader
+    gl.uniform1i(gl.getUniformLocation(program, 'showTimestep'), settings.showTimestep ? 1 : 0);
 
     // Custom parameters
     gl.uniform1i(gl.getUniformLocation(program, 'show_depth_map'), settings.debugDepth)

@@ -22,6 +22,7 @@ async function loadPly(content) {
     const harmonics = []
     const colors = []
     const cov3Ds = []
+    // const modelIDs = [] // Gaussian ID for the Slider
 
     // Scene bouding box
     sceneMin = new Array(3).fill(Infinity)
@@ -54,13 +55,22 @@ async function loadPly(content) {
         const opacity = fromDataView(splatID, H_END)
         const scale = fromDataView(splatID, H_END + 1, H_END + 4)
         const rotation = fromDataView(splatID, H_END + 4, H_END + 8)
+
+        // Extracted model id (to recognize each point in the scene)
+        // const model_id = fromDataView(splatID, H_END + 8); // Modifica l'indice in base alla posizione effettiva
     
         return { position, harmonic, opacity, scale, rotation }
+
+        // return { position, harmonic, opacity, scale, rotation, model_id }
     }
 
     for (let i = 0; i < gaussianCount; i++) {
         // Extract data for current gaussian
         let { position, harmonic, opacity, scale, rotation } = extractSplatData(i)
+
+        // Model ID for the Slider
+        // let { position, harmonic, opacity, scale, rotation, model_id } = extractSplatData(i);
+        // modelIDs.push(model_id)
         
         // Update scene bounding box
         sceneMin = sceneMin.map((v, j) => Math.min(v, position[j]))
@@ -115,6 +125,9 @@ async function loadPly(content) {
     console.log(`Loaded ${gaussianCount} gaussians in ${((performance.now() - start)/1000).toFixed(3)}s`)
     
     return { positions, opacities, colors, cov3Ds }
+
+    // Return the data structure in loader
+    // return { positions, opacities, colors, cov3Ds, modelIDs }
 }
 
 // Converts scale and rotation properties of each

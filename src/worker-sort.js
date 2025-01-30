@@ -17,6 +17,8 @@ onmessage = function(event) {
         data.cov3Da = new Float32Array(gaussians.count * 3)
         data.cov3Db = new Float32Array(gaussians.count * 3)
         data.colors = new Float32Array(gaussians.count * 3)
+        // Slider to select the model to display
+        // data.modelIDs = new Uint32Array(gaussians.count)
     }
     // Sort gaussians event
     else if (event.data.viewMatrix) {

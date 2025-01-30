@@ -2,7 +2,11 @@
 precision mediump float;
 
 uniform bool show_depth_map;
+// for the slider
+// uniform float sliderValue;
+// uniform bool showTimestep; 
 
+// in int v_model_id;
 in vec3 col;
 in float scale_modif;
 in float depth;
@@ -19,6 +23,22 @@ vec3 depth_palette(float x) {
 
 // Original CUDA implementation: https://github.com/graphdeco-inria/diff-gaussian-rasterization/blob/main/cuda_rasterizer/forward.cu#L263
 void main() {
+
+    // implementare la logica con il quale visualizzare o meno i punti dei diversi Model_ID
+    // if ((sliderValue == 0.0 && v_model_id != 0) || (sliderValue == 1.0 && v_model_id != 1)) {
+    //     discard;
+    // }
+
+
+    //  if (showTimestep) {
+    //    // Applica la logica della timeline solo se showTimestep è abilitato
+    //    if (timeStep < 0.5 && v_model_id != 0) {
+    //        discard; // Nascondi i punti che non appartengono al primo modello
+    //    } else if (timeStep >= 0.5 && v_model_id != 1) {
+    //        discard; // Nascondi i punti che non appartengono al secondo modello
+    //    }
+    // }
+    
 
     // Resample using conic matrix (cf. "Surface 
     // Splatting" by Zwicker et al., 2001)
