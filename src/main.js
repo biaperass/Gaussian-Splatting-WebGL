@@ -13,6 +13,10 @@ let sceneMin, sceneMax
 let gizmoRenderer = new GizmoRenderer()
 let positionBuffer, positionData, opacityData
 
+// Global array to store multiple gaussian splats  
+window.localModels = []; 
+window.modelController = null;
+
 const settings = {
     scene: 'room',
     renderResolution: 0.2,
@@ -118,6 +122,17 @@ async function main() {
 
 // Load a .ply scene specified as a name (URL fetch) or local file
 async function loadScene({scene, file}) {
+
+    // Parameters for the camera (Custom or default)
+    if(file && !defaultCameraParameters[file.name]) {
+        cam.setParameters({
+            up: [0, 1, 0],
+            target: [0, 0, 0],
+            camera: [5, 5, 5],
+            defaultCameraMode: 'orbit'
+        });
+    }
+
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
     if (cam) cam.disableMovement = true
@@ -139,6 +154,13 @@ async function loadScene({scene, file}) {
         reader = file.stream().getReader()
         settings.scene = 'custom'
     }
+    /* Maybe we can use this to load a model from the local file system
+            if(file) {
+                settings.scene = file.name;
+                settings.selectedModel = file.name;
+                if(window.modelController) window.modelController.updateDisplay();
+            }
+    */
     else
         throw new Error('No scene or file specified')
 
@@ -242,5 +264,49 @@ function render(width, height, res) {
         renderTimeout = setTimeout(() => requestRender(nextWidth, nextHeight, nextResolution), 200)
     }
 }
+
+// ShowStatusMessage shows a message in the status bar for a few seconds
+function showStatusMessage(message, type = 'info') {
+    const colors = {
+        success: '#4CAF50',
+        error: '#f44336',
+        info: '#2196F3'
+    };
+    
+    const msgEl = document.createElement('div');
+    msgEl.style = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px;
+        color: white;
+        background: ${colors[type]};
+        border-radius: 5px;
+        z-index: 1000;
+        animation: fadeIn 0.5s;
+    `;
+    
+    msgEl.textContent = message;
+    document.body.appendChild(msgEl);
+    
+    setTimeout(() => {
+        msgEl.style.animation = 'fadeOut 0.5s';
+        setTimeout(() => msgEl.remove(), 500);
+    }, 3000);
+}
+// CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(20px); }
+    }
+`;
+document.head.appendChild(style);
+
 
 window.onload = main

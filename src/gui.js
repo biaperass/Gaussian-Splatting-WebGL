@@ -39,7 +39,8 @@ function initGUI() {
     document.querySelector('#input').addEventListener('change', async e => {
         if (e.target.files.length === 0) return
         try {
-            await loadScene({ file: e.target.files[0] })
+            const file = e.target.files[0];
+            await loadScene({ file: file })
         } catch (error) {
             document.querySelector('#loading-text').textContent = `An error occured when trying to read the file.`
             throw error
@@ -72,18 +73,54 @@ function initGUI() {
 
     // Time evolution settings
     const timeFolder = gui.addFolder('Time Evolution');
-    timeFolder.add(settings, 'showTimestep').name('Enable Timeline').onChange(() => requestRender());
+    
+    // Enable timeline checkbox
+    // timeFolder.add(settings, 'showTimestep').name('Enable Timeline').onChange(() => requestRender());
 
-    // to control the slider's value
-    const sliderController = timeFolder.add(settings, 'timeStep', 0, 1, 0.5)
-        .name('Timeline')
-        .onChange(() => {
-            cam.needsWorkerUpdate = true;
-            requestRender();
-        });
+    // Loaded models dropdown
+    if (!window.modelController) {
+        window.modelController = timeFolder.add(settings, 'selectedModel', ['Default Scenes'])
+            .name('Loaded Models')
+            .listen()
+            .onChange(async (value) => {
+                if (value !== 'Default Scenes') {
+                    const model = window.localModels.find(m => m.name === value);
+                    if (model) await loadScene({ file: model.file });
+                }
+            });
+        window.modelControllerInitialized = true;
+    }
 
-    // CSS personalizzato per lo slider
-    sliderController.domElement.querySelector('input').style.accentColor = '#ff4444';
+    settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
+    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply for Time Evolution');
+
+    // Time evolution file upload handler
+    document.querySelector('#timeEvolutionInput').addEventListener('change', async e => {
+        if (e.target.files.length === 0) return;
+
+        try {
+            const file = e.target.files[0];
+
+            // Check if the model is already loaded
+            if (window.localModels.some(m => m.name === file.name)) {
+                showStatusMessage(`${file.name} is already loaded.`, 'info');
+                return;
+            }
+
+            // Add the model to the list of loaded models
+            window.localModels.push({ name: file.name, file: file });
+
+            // Update the dropdown with the new model
+            window.modelController.options(['Default Scenes', ...window.localModels.map(m => m.name)]);
+            window.modelController.updateDisplay();
+
+            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
+
+        } catch (error) {
+            showStatusMessage(`Error loading file: ${error.message}`, 'error');
+        }
+    });
+
 
     // Camera calibration folder
     addCameraCalibrationFolder(gui)
