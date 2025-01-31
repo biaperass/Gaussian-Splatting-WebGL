@@ -124,6 +124,7 @@ async function main() {
 async function loadScene({scene, file}) {
 
     // Parameters for the camera (Custom or default)
+    /*
     if(file && !defaultCameraParameters[file.name]) {
         cam.setParameters({
             up: [0, 1, 0],
@@ -132,6 +133,7 @@ async function loadScene({scene, file}) {
             defaultCameraMode: 'orbit'
         });
     }
+    */
 
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
@@ -150,9 +152,14 @@ async function loadScene({scene, file}) {
     }
     // Create a StreamableReader from a File object
     else if (file != null) {
-        contentLength = file.size
-        reader = file.stream().getReader()
-        settings.scene = 'custom'
+        // contentLength = file.size
+        // reader = file.stream().getReader()
+        // settings.scene = 'custom'
+
+        const response = await fetch(file); // Carica il file dal percorso locale
+        contentLength = parseInt(response.headers.get('content-length'));
+        reader = response.body.getReader();
+        settings.scene = 'custom';
     }
     /* Maybe we can use this to load a model from the local file system
             if(file) {

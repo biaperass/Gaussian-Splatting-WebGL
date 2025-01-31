@@ -82,13 +82,32 @@ function initGUI() {
         window.modelController = timeFolder.add(settings, 'selectedModel', ['Default Scenes'])
             .name('Loaded Models')
             .listen()
-            .onChange(async (value) => {
+            .onChange((value) => {
                 if (value !== 'Default Scenes') {
                     const model = window.localModels.find(m => m.name === value);
-                    if (model) await loadScene({ file: model.file });
+                    if (model) {
+                        showStatusMessage(`Loading model: ${model.path}`, 'info');
+                        loadScene({ file: model.path });
+                    }
                 }
             });
-        window.modelControllerInitialized = true;
+
+            // Aggiungi evento onclick per forzare l'aggiornamento della selezione
+            setTimeout(() => {
+                const dropdown = window.modelController.domElement.querySelector('select');
+                if (dropdown) {
+                    dropdown.addEventListener('click', () => {
+                        const selectedValue = settings.selectedModel;
+                        if (selectedValue !== 'Default Scenes') {
+                            const model = window.localModels.find(m => m.name === selectedValue);
+                            if (model) {
+                                showStatusMessage(`Loading model: ${model.path}`, 'info');
+                                loadScene({ file: model.path });
+                            }
+                        }
+                    });
+                }
+            }, 100);
     }
 
     settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
@@ -100,6 +119,7 @@ function initGUI() {
 
         try {
             const file = e.target.files[0];
+            const filePath = URL.createObjectURL(file); // Create a URL for the file
 
             // Check if the model is already loaded
             if (window.localModels.some(m => m.name === file.name)) {
@@ -108,13 +128,23 @@ function initGUI() {
             }
 
             // Add the model to the list of loaded models
-            window.localModels.push({ name: file.name, file: file });
+            // window.localModels.push({ name: file.name, file: file });
+
+            // Add the model to the list of loaded models path
+            window.localModels.push({ name: file.name, path: filePath });
 
             // Update the dropdown with the new model
-            window.modelController.options(['Default Scenes', ...window.localModels.map(m => m.name)]);
-            window.modelController.updateDisplay();
+            const dropdown = window.modelController.domElement.querySelector('select');
+            if (dropdown) {
+                const option = document.createElement('option');
+                option.value = file.name;
+                option.textContent = file.name;
+                dropdown.appendChild(option);
+            }
 
             showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
+
+            await loadScene({ file: filePath });
 
         } catch (error) {
             showStatusMessage(`Error loading file: ${error.message}`, 'error');
