@@ -73,9 +73,6 @@ function initGUI() {
 
     // Time evolution settings
     const timeFolder = gui.addFolder('Time Evolution');
-    
-    // Enable timeline checkbox
-    // timeFolder.add(settings, 'showTimestep').name('Enable Timeline').onChange(() => requestRender());
 
     // Loaded models dropdown
     if (!window.modelController) {
@@ -85,6 +82,7 @@ function initGUI() {
             .onChange((value) => {
                 if (value !== 'Default Scenes') {
                     const model = window.localModels.find(m => m.name === value);
+                    showStatusMessage(`Loading model before check model existences: ${model.path}`, 'info');
                     if (model) {
                         showStatusMessage(`Loading model: ${model.path}`, 'info');
                         loadScene({ file: model.path });
@@ -97,11 +95,14 @@ function initGUI() {
                 const dropdown = window.modelController.domElement.querySelector('select');
                 if (dropdown) {
                     dropdown.addEventListener('click', () => {
-                        const selectedValue = settings.selectedModel;
+                        // const selectedValue = dropdown.value;
+                        const selectedValue = dropdown.options[dropdown.selectedIndex]?.value;
                         if (selectedValue !== 'Default Scenes') {
                             const model = window.localModels.find(m => m.name === selectedValue);
                             if (model) {
                                 showStatusMessage(`Loading model: ${model.path}`, 'info');
+                                settings.selectedModel = selectedValue;
+                                window.modelController.updateDisplay();
                                 loadScene({ file: model.path });
                             }
                         }
@@ -127,9 +128,6 @@ function initGUI() {
                 return;
             }
 
-            // Add the model to the list of loaded models
-            // window.localModels.push({ name: file.name, file: file });
-
             // Add the model to the list of loaded models path
             window.localModels.push({ name: file.name, path: filePath });
 
@@ -142,9 +140,14 @@ function initGUI() {
                 dropdown.appendChild(option);
             }
 
-            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
+            // Update the value of settings.selectedModel to trigger onChange event
+            settings.selectedModel = file.name;
+            window.modelController.updateDisplay();
 
+            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
             await loadScene({ file: filePath });
+            showStatusMessage(`Model loaded: ${filePath}`, 'info');
+        
 
         } catch (error) {
             showStatusMessage(`Error loading file: ${error.message}`, 'error');
