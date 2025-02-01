@@ -39,7 +39,8 @@ function initGUI() {
     document.querySelector('#input').addEventListener('change', async e => {
         if (e.target.files.length === 0) return
         try {
-            await loadScene({ file: e.target.files[0] })
+            const file = e.target.files[0];
+            await loadScene({ file: file })
         } catch (error) {
             document.querySelector('#loading-text').textContent = `An error occured when trying to read the file.`
             throw error
@@ -72,18 +73,87 @@ function initGUI() {
 
     // Time evolution settings
     const timeFolder = gui.addFolder('Time Evolution');
-    timeFolder.add(settings, 'showTimestep').name('Enable Timeline').onChange(() => requestRender());
 
-    // to control the slider's value
-    const sliderController = timeFolder.add(settings, 'timeStep', 0, 1, 0.5)
-        .name('Timeline')
-        .onChange(() => {
-            cam.needsWorkerUpdate = true;
-            requestRender();
-        });
+    // Loaded models dropdown
+    if (!window.modelController) {
+        window.modelController = timeFolder.add(settings, 'selectedModel', ['Default Scenes'])
+            .name('Loaded Models')
+            .listen()
+            .onChange((value) => {
+                if (value !== 'Default Scenes') {
+                    const model = window.localModels.find(m => m.name === value);
+                    showStatusMessage(`Loading model before check model existences: ${model.path}`, 'info');
+                    if (model) {
+                        showStatusMessage(`Loading model: ${model.path}`, 'info');
+                        loadScene({ file: model.path });
+                    }
+                }
+            });
 
-    // CSS personalizzato per lo slider
-    sliderController.domElement.querySelector('input').style.accentColor = '#ff4444';
+            // Aggiungi evento onclick per forzare l'aggiornamento della selezione
+            setTimeout(() => {
+                const dropdown = window.modelController.domElement.querySelector('select');
+                if (dropdown) {
+                    dropdown.addEventListener('click', () => {
+                        // const selectedValue = dropdown.value;
+                        const selectedValue = dropdown.options[dropdown.selectedIndex]?.value;
+                        if (selectedValue !== 'Default Scenes') {
+                            const model = window.localModels.find(m => m.name === selectedValue);
+                            if (model) {
+                                showStatusMessage(`Loading model: ${model.path}`, 'info');
+                                settings.selectedModel = selectedValue;
+                                window.modelController.updateDisplay();
+                                loadScene({ file: model.path });
+                            }
+                        }
+                    });
+                }
+            }, 100);
+    }
+
+    settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
+    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply for Time Evolution');
+
+    // Time evolution file upload handler
+    document.querySelector('#timeEvolutionInput').addEventListener('change', async e => {
+        if (e.target.files.length === 0) return;
+
+        try {
+            const file = e.target.files[0];
+            const filePath = URL.createObjectURL(file); // Create a URL for the file
+
+            // Check if the model is already loaded
+            if (window.localModels.some(m => m.name === file.name)) {
+                showStatusMessage(`${file.name} is already loaded.`, 'info');
+                return;
+            }
+
+            // Add the model to the list of loaded models path
+            window.localModels.push({ name: file.name, path: filePath });
+
+            // Update the dropdown with the new model
+            const dropdown = window.modelController.domElement.querySelector('select');
+            if (dropdown) {
+                const option = document.createElement('option');
+                option.value = file.name;
+                option.textContent = file.name;
+                dropdown.appendChild(option);
+            }
+
+            // Update the value of settings.selectedModel to trigger onChange event
+            settings.selectedModel = file.name;
+            window.modelController.updateDisplay();
+
+            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
+            await loadScene({ file: filePath });
+            showStatusMessage(`Model loaded: ${filePath}`, 'info');
+        
+
+        } catch (error) {
+            showStatusMessage(`Error loading file: ${error.message}`, 'error');
+        }
+    });
+
 
     // Camera calibration folder
     addCameraCalibrationFolder(gui)
