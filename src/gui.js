@@ -172,16 +172,106 @@ function initGUI() {
 function initGUI() {
     const gui = new lil.GUI({ title: 'Settings' });
 
-    // Main settings
-    //const sceneNames = Object.entries(defaultCameraParameters).map(([name, { size }]) => `${name} (${size})`);
-    //settings.scene = sceneNames[0];
-    //gui.add(settings, 'scene', sceneNames).name('Scene').listen().onChange((scene) => loadScene({ scene }));
-    gui.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution');
-    maxGaussianController = gui.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians').onChange(() => {
+    const sceneNames = Object.entries(defaultCameraParameters).map(([name, { size }]) => `${name} (${size})`);
+    settings.scene = sceneNames[0];
+    gui.add(settings, 'scene', sceneNames).name('Default Scene').listen().onChange((scene) => loadScene({ scene }));
+    settings.reloadPage = () => {
+        showStatusMessage("Reloading the page...", 'info');
+        location.reload();
+    };
+    gui.add(settings, 'reloadPage').name('Reload Page');
+
+    // Time evolution settings
+    const timeFolder = gui.addFolder('Models Uploaded');
+
+    // Checkbox per i modelli caricati
+    if (!window.modelCheckboxes) {
+        window.modelCheckboxes = {};
+        // Inizializza i checkbox per i modelli già presenti
+        window.localModels.forEach((model) => {
+            const checkboxName = model.name;
+            settings[checkboxName] = false; // Inizializza il valore del checkbox a false
+            window.modelCheckboxes[checkboxName] = timeFolder.add(settings, checkboxName).name(checkboxName).listen().onChange(() => {
+                if (settings[checkboxName]) {
+                    //showStatusMessage(`Loading model: ${model.path}`, 'info');
+                    loadScene({ file: model.path });
+                } else {
+                    showStatusMessage(`Unloaded model: ${model.name}`, 'info');
+                }
+            });
+        });
+    }
+
+    settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
+    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply file');
+
+    // Time evolution file upload handler
+    document.querySelector('#timeEvolutionInput').addEventListener('change', async (e) => {
+        if (e.target.files.length === 0) return;
+        try {
+            const file = e.target.files[0];
+            const filePath = URL.createObjectURL(file); // Crea un URL per il file
+
+            // Verifica se il modello è già caricato
+            if (window.localModels.some((m) => m.name === file.name)) {
+                showStatusMessage(`${file.name} is already loaded.`, 'info');
+                return;
+            }
+
+            // Deseleziona tutti i modelli preesistenti
+            window.localModels.forEach((model) => {
+                if (model.name !== file.name) {
+                    settings[model.name] = false; // Deseleziona il modello
+                    if (window.modelCheckboxes[model.name]) {
+                        window.modelCheckboxes[model.name].updateDisplay(); // Aggiorna l'interfaccia
+                    }
+                }
+            });
+
+            // Aggiungi il modello alla lista dei modelli caricati
+            window.localModels.push({ name: file.name, path: filePath });
+            
+            // Imposta il valore della checkbox a true per selezionarla automaticamente
+            settings[file.name] = true;
+            window.modelCheckboxes[file.name] = timeFolder.add(settings, file.name).name(file.name).listen().onChange(() => {
+                if (settings[file.name]) {
+                    // showStatusMessage(`Loading model: ${filePath}`, 'info');
+                    loadScene({ file: filePath });
+                    window.localModels.forEach((model) => {
+                        if (model.name !== file.name) {
+                            settings[model.name] = false; // Deseleziona il modello
+                            if (window.modelCheckboxes[model.name]) {
+                                window.modelCheckboxes[model.name].updateDisplay(); // Aggiorna l'interfaccia
+                            }
+                        }
+                    });
+                } else {
+                    showStatusMessage(`Unloaded model: ${file.name}`, 'info');
+                }
+            });
+
+            // Forza l'aggiornamento della GUI per riflettere lo stato selezionato
+            window.modelCheckboxes[file.name].updateDisplay();
+
+
+
+            // Caricare modello nel viewer
+            showStatusMessage(`${file.name} loaded correctly!`, 'success');
+            await loadScene({ file: filePath });
+            // showStatusMessage(`Model loaded: ${filePath}`, 'info');
+        } catch (error) {
+            showStatusMessage(`Error loading file ${file.name}: ${error.message}`, 'error');
+        }
+    });
+
+    // Resolution settings
+    const resolutionFolder = gui.addFolder('Resolution Settings').close();
+    resolutionFolder.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution');
+    maxGaussianController = resolutionFolder.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians').onChange(() => {
         cam.needsWorkerUpdate = true;
         cam.updateWorker();
     });
-    gui.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier').onChange(() => requestRender());
+    resolutionFolder.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier').onChange(() => requestRender());
 
     // File upload handler
     /*
@@ -212,73 +302,6 @@ function initGUI() {
         requestRender();
     });
     otherFolder.add(settings, 'debugDepth').name('Show Depth Map').onChange(() => requestRender());
-
-    // Time evolution settings
-    const timeFolder = gui.addFolder('Time Evolution');
-
-    // Aggiungi un pulsante per ricaricare la pagina
-    settings.reloadPage = () => {
-        showStatusMessage("Reloading the page...", 'info');
-        location.reload();
-    };
-    timeFolder.add(settings, 'reloadPage').name('Reload Page');
-
-    // Checkbox per i modelli caricati
-    if (!window.modelCheckboxes) {
-        window.modelCheckboxes = {};
-        // Inizializza i checkbox per i modelli già presenti
-        window.localModels.forEach((model) => {
-            const checkboxName = model.name;
-            settings[checkboxName] = false; // Inizializza il valore del checkbox a false
-            window.modelCheckboxes[checkboxName] = timeFolder.add(settings, checkboxName).name(checkboxName).listen().onChange(() => {
-                if (settings[checkboxName]) {
-                    showStatusMessage(`Loading model: ${model.path}`, 'info');
-                    loadScene({ file: model.path });
-                } else {
-                    showStatusMessage(`Unloaded model: ${model.name}`, 'info');
-                }
-            });
-        });
-    }
-
-    settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
-    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply for Time Evolution');
-
-    // Time evolution file upload handler
-    document.querySelector('#timeEvolutionInput').addEventListener('change', async (e) => {
-        if (e.target.files.length === 0) return;
-        try {
-            const file = e.target.files[0];
-            const filePath = URL.createObjectURL(file); // Crea un URL per il file
-
-            // Verifica se il modello è già caricato
-            if (window.localModels.some((m) => m.name === file.name)) {
-                showStatusMessage(`${file.name} is already loaded.`, 'info');
-                return;
-            }
-
-            // Aggiungi il modello alla lista dei modelli caricati
-            window.localModels.push({ name: file.name, path: filePath });
-            
-            // Imposta il valore della checkbox a true per selezionarla automaticamente
-            settings[file.name] = true;
-            window.modelCheckboxes[file.name] = timeFolder.add(settings, file.name).name(file.name).listen().onChange(() => {
-                if (settings[file.name]) {
-                    showStatusMessage(`Loading model: ${filePath}`, 'info');
-                    loadScene({ file: filePath });
-                } else {
-                    showStatusMessage(`Unloaded model: ${file.name}`, 'info');
-                }
-            });
-
-            // Caricare modello nel viewer
-            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
-            await loadScene({ file: filePath });
-            showStatusMessage(`Model loaded: ${filePath}`, 'info');
-        } catch (error) {
-            showStatusMessage(`Error loading file: ${error.message}`, 'error');
-        }
-    });
 
     // Camera calibration folder
     addCameraCalibrationFolder(gui)
