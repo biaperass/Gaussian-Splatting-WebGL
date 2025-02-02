@@ -179,7 +179,11 @@ function initGUI() {
         showStatusMessage("Reloading the page...", 'info');
         location.reload();
     };
-    gui.add(settings, 'reloadPage').name('Reload Page');
+    var controllerReload = gui.add(settings, 'reloadPage').name('Reload Page');
+	var buttonReload = controller.domElement.querySelector('button');
+	if (buttonReload) {
+	  buttonReload.title = "Use this button to reset the page, remove all models, and return to the initial configuration.";
+	}
 
     // Time evolution settings
     const timeFolder = gui.addFolder('Models Uploaded');
@@ -203,7 +207,11 @@ function initGUI() {
     }
 
     settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
-    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply file');
+    var controllerUpload = timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply file');
+	var buttonUpload = timeController.domElement.querySelector('button');
+	if (buttonUpload) {
+	  buttonUpload.title = "Select and upload a 3D model (in .ply format) to add it to the scene.";
+	}
 
     // Time evolution file upload handler
     document.querySelector('#timeEvolutionInput').addEventListener('change', async (e) => {
