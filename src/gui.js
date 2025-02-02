@@ -173,9 +173,9 @@ function initGUI() {
     const gui = new lil.GUI({ title: 'Settings' });
 
     // Main settings
-    const sceneNames = Object.entries(defaultCameraParameters).map(([name, { size }]) => `${name} (${size})`);
-    settings.scene = sceneNames[0];
-    gui.add(settings, 'scene', sceneNames).name('Scene').listen().onChange((scene) => loadScene({ scene }));
+    //const sceneNames = Object.entries(defaultCameraParameters).map(([name, { size }]) => `${name} (${size})`);
+    //settings.scene = sceneNames[0];
+    //gui.add(settings, 'scene', sceneNames).name('Scene').listen().onChange((scene) => loadScene({ scene }));
     gui.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution');
     maxGaussianController = gui.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians').onChange(() => {
         cam.needsWorkerUpdate = true;
@@ -184,6 +184,7 @@ function initGUI() {
     gui.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier').onChange(() => requestRender());
 
     // File upload handler
+    /*
     gui.add(settings, 'uploadFile').name('Upload .ply file');
     document.querySelector('#input').addEventListener('change', async (e) => {
         if (e.target.files.length === 0) return;
@@ -195,6 +196,7 @@ function initGUI() {
             throw error;
         }
     });
+    */
 
     // Other settings
     const otherFolder = gui.addFolder('Other Settings').close();
@@ -213,6 +215,13 @@ function initGUI() {
 
     // Time evolution settings
     const timeFolder = gui.addFolder('Time Evolution');
+
+    // Aggiungi un pulsante per ricaricare la pagina
+    settings.reloadPage = () => {
+        showStatusMessage("Reloading the page...", 'info');
+        location.reload();
+    };
+    timeFolder.add(settings, 'reloadPage').name('Reload Page');
 
     // Checkbox per i modelli caricati
     if (!window.modelCheckboxes) {
@@ -250,9 +259,9 @@ function initGUI() {
 
             // Aggiungi il modello alla lista dei modelli caricati
             window.localModels.push({ name: file.name, path: filePath });
-
-            // Aggiungi un nuovo checkbox per il modello appena caricato
-            settings[file.name] = false; // Inizializza il valore del checkbox a false
+            
+            // Imposta il valore della checkbox a true per selezionarla automaticamente
+            settings[file.name] = true;
             window.modelCheckboxes[file.name] = timeFolder.add(settings, file.name).name(file.name).listen().onChange(() => {
                 if (settings[file.name]) {
                     showStatusMessage(`Loading model: ${filePath}`, 'info');
@@ -262,6 +271,7 @@ function initGUI() {
                 }
             });
 
+            // Caricare modello nel viewer
             showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
             await loadScene({ file: filePath });
             showStatusMessage(`Model loaded: ${filePath}`, 'info');
@@ -372,7 +382,7 @@ function addGithubLink(gui) {
     
     const githubLink = document.createElement('a')
     githubLink.style.color = 'white'
-    githubLink.href = 'https://github.com/kishimisu/Gaussian-Splatting-WebGL'
+    githubLink.href = 'https://github.com/biaperass/Gaussian-Splatting-WebGL'
     githubLink.textContent = 'github.com/Gaussian-Splatting-WebGL'
     githubLink.target = '_blank'
     githubLink.rel = 'noopener noreferrer'
