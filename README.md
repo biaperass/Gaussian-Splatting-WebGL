@@ -1,5 +1,13 @@
 # WebGL 3D Gaussian Splatting Renderer
 
+#### Acknoledgement
+
+This repository is a fork of the original project [Gaussian-Splatting-WebGL](https://github.com/kishimisu/Gaussian-Splatting-WebGL), which has been extended as part of a university project to include additional features and functionalities. The project is a request for the course course [Augmented and Virtual Reality](https://corsi.unige.it/off.f/2023/ins/66562) during Master's degree in Computer Engineering - Artifical Intelligence at the University of Genova.
+
+I acknowledge the efforts of the original authors and their contribution as the foundation for this work. All modifications and updates introduced here aim to align with the original code structure and project goals while meeting specific academic requirements.
+
+## Overview
+
 Javascript and WebGL2 implementation of a 3D gaussian rasterizer based on the paper [3D Gaussian Splatting
 for Real-Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/).
 
