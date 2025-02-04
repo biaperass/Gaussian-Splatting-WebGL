@@ -1,6 +1,6 @@
 # WebGL 3D Gaussian Splatting Renderer
 
-#### Acknoledgement
+## Acknoledgement
 
 This repository is a fork of the original project [Gaussian-Splatting-WebGL](https://github.com/kishimisu/Gaussian-Splatting-WebGL), which has been extended as part of a university project to include additional features and functionalities. The project is a request for the course course [Augmented and Virtual Reality](https://corsi.unige.it/off.f/2023/ins/66562) during Master's degree in Computer Engineering - Artifical Intelligence at the University of Genova.
 
@@ -12,6 +12,11 @@ Javascript and WebGL2 implementation of a 3D gaussian rasterizer based on the pa
 for Real-Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/).
 
 I tried to match as closely as possible the original C++/CUDA implementation (which is split into multiple repositories) so that the question "where are these calculations coming from?" can easily be answered when looking through the code.
+
+## 🌐 Live Demo
+
+🚀 Experience the project in action!  
+👉 [Click here to try the live demo!](https://biaperass.github.io/Gaussian-Splatting-WebGL/)  
 
 ## 🆕 New Features: Models Manager Extension
 
@@ -31,12 +36,6 @@ Below is a preview of the updated **Models Manager** interface:
 <p align="center">
   <img src="./GUI.png" alt="Models Manager GUI" width="300">
 </p>
-
-
-## 🌐 Live Demo
-
-🚀 Experience the project in action!  
-👉 [Click here to try the live demo!](https://biaperass.github.io/Gaussian-Splatting-WebGL/)  
 
 ## Background
 
