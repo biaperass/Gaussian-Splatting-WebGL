@@ -1,13 +1,41 @@
 # WebGL 3D Gaussian Splatting Renderer
 
+## Acknoledgement
+
+This repository is a fork of the original project [Gaussian-Splatting-WebGL](https://github.com/kishimisu/Gaussian-Splatting-WebGL), which has been extended as part of a university project to include additional features and functionalities. The project is a request for the course course [Augmented and Virtual Reality](https://corsi.unige.it/off.f/2023/ins/66562) during Master's degree in Computer Engineering - Artifical Intelligence at the University of Genova.
+
+I acknowledge the efforts of the original authors and their contribution as the foundation for this work. All modifications and updates introduced here aim to align with the original code structure and project goals while meeting specific academic requirements.
+
+## Overview
+
 Javascript and WebGL2 implementation of a 3D gaussian rasterizer based on the paper [3D Gaussian Splatting
 for Real-Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/).
 
 I tried to match as closely as possible the original C++/CUDA implementation (which is split into multiple repositories) so that the question "where are these calculations coming from?" can easily be answered when looking through the code.
 
-## Live Demo
+## 🌐 Live Demo
 
-[https://webgl-gaussian-splatting.vercel.app/](https://webgl-gaussian-splatting.vercel.app/).
+🚀 Experience the project in action!  
+👉 [Click here to try the live demo!](https://biaperass.github.io/Gaussian-Splatting-WebGL/)  
+
+## 🆕 New Features: Models Manager Extension
+
+As part of this extension, a new folder called **"Models Manager"** has been added within the existing GUI. This section introduces new functionalities for handling multiple Gaussian Splatting models:
+
+- **Upload PLY File Button**: A new button allows users to upload a `.ply` file containing a Gaussian Splatting model.
+- **Model Selection Checkboxes**: Once a `.ply` file is uploaded, checkboxes appear corresponding to each uploaded file, allowing users to select which model to visualize.
+- **Multi-Model Support**: Users can add multiple models simultaneously and switch between them using the provided checkboxes.
+- **Model Removal**: To remove all uploaded models, simply press the **"Reload Page"** button.
+
+These enhancements improve interactivity and flexibility in viewing different Gaussian Splatting models dynamically.
+
+### 🖼️ Models Manager GUI Preview
+
+Below is a preview of the updated **Models Manager** interface:
+
+<p align="center">
+  <img src="./GUI.png" alt="Models Manager GUI" width="300">
+</p>
 
 ## Background
 
