@@ -13,160 +13,17 @@ let camController = {
     }
 }
 
-/*
-// Init settings GUI panel
-function initGUI() {
-    const gui = new lil.GUI({title: 'Settings'})
-
-    // Main settings
-    const sceneNames = Object.entries(defaultCameraParameters).map(([name, { size }]) => `${name} (${size})`)
-    settings.scene = sceneNames[0]
-    gui.add(settings, 'scene', sceneNames).name('Scene').listen()
-       .onChange((scene) => loadScene({ scene }))
-
-    gui.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution')
-
-    maxGaussianController = gui.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians')
-       .onChange(() => {
-            cam.needsWorkerUpdate = true
-            cam.updateWorker()
-        })
-
-    gui.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier')
-        .onChange(() => requestRender())
-
-    // File upload handler
-    gui.add(settings, 'uploadFile').name('Upload .ply file')
-    document.querySelector('#input').addEventListener('change', async e => {
-        if (e.target.files.length === 0) return
-        try {
-            const file = e.target.files[0];
-            await loadScene({ file: file })
-        } catch (error) {
-            document.querySelector('#loading-text').textContent = `An error occured when trying to read the file.`
-            throw error
-        }
-    })
-
-    // Other settings
-    const otherFolder = gui.addFolder('Other Settings').close()
-
-    otherFolder.add(settings, 'sortingAlgorithm', SORTING_ALGORITHMS).name('Sorting Algorithm')
-
-    otherFolder.add(settings, 'sortTime').name('Sort Time').disable().listen()
-
-    otherFolder.addColor(settings, 'bgColor').name('Background Color')
-       .onChange(value => {
-        document.body.style.backgroundColor = value
-        requestRender()
-    })
-
-    otherFolder.add(settings, 'speed', 0.01, 2, 0.01).name('Camera Speed')
-
-    otherFolder.add(settings, 'fov', 30, 110, 1).name('FOV')
-       .onChange(value => {
-        cam.fov_y = value * Math.PI / 180
-        requestRender()
-    })
-
-    otherFolder.add(settings, 'debugDepth').name('Show Depth Map')
-       .onChange(() => requestRender())
-
-    // Time evolution settings
-    const timeFolder = gui.addFolder('Time Evolution');
-
-    // Loaded models dropdown
-    if (!window.modelController) {
-        window.modelController = timeFolder.add(settings, 'selectedModel', ['Default Scenes'])
-            .name('Loaded Models')
-            .listen()
-            .onChange((value) => {
-                if (value !== 'Default Scenes') {
-                    const model = window.localModels.find(m => m.name === value);
-                    showStatusMessage(`Loading model before check model existences: ${model.path}`, 'info');
-                    if (model) {
-                        showStatusMessage(`Loading model: ${model.path}`, 'info');
-                        loadScene({ file: model.path });
-                    }
-                }
-            });
-
-            // Aggiungi evento onclick per forzare l'aggiornamento della selezione
-            setTimeout(() => {
-                const dropdown = window.modelController.domElement.querySelector('select');
-                if (dropdown) {
-                    dropdown.addEventListener('click', () => {
-                        // const selectedValue = dropdown.value;
-                        const selectedValue = dropdown.options[dropdown.selectedIndex]?.value;
-                        if (selectedValue !== 'Default Scenes') {
-                            const model = window.localModels.find(m => m.name === selectedValue);
-                            if (model) {
-                                showStatusMessage(`Loading model: ${model.path}`, 'info');
-                                settings.selectedModel = selectedValue;
-                                window.modelController.updateDisplay();
-                                loadScene({ file: model.path });
-                            }
-                        }
-                    });
-                }
-            }, 100);
+let modMerging = {
+    texts: {
+        'default': 'If you want to merge your models and visualize them with highlited differences, try our executable program! Click on the following link to download it: '
     }
-
-    settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
-    timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply for Time Evolution');
-
-    // Time evolution file upload handler
-    document.querySelector('#timeEvolutionInput').addEventListener('change', async e => {
-        if (e.target.files.length === 0) return;
-
-        try {
-            const file = e.target.files[0];
-            const filePath = URL.createObjectURL(file); // Create a URL for the file
-
-            // Check if the model is already loaded
-            if (window.localModels.some(m => m.name === file.name)) {
-                showStatusMessage(`${file.name} is already loaded.`, 'info');
-                return;
-            }
-
-            // Add the model to the list of loaded models path
-            window.localModels.push({ name: file.name, path: filePath });
-
-            // Update the dropdown with the new model
-            const dropdown = window.modelController.domElement.querySelector('select');
-            if (dropdown) {
-                const option = document.createElement('option');
-                option.value = file.name;
-                option.textContent = file.name;
-                dropdown.appendChild(option);
-            }
-
-            // Update the value of settings.selectedModel to trigger onChange event
-            settings.selectedModel = file.name;
-            window.modelController.updateDisplay();
-
-            showStatusMessage(`${file.name} loaded correctly for Time Evolution!`, 'success');
-            await loadScene({ file: filePath });
-            showStatusMessage(`Model loaded: ${filePath}`, 'info');
-        
-
-        } catch (error) {
-            showStatusMessage(`Error loading file: ${error.message}`, 'error');
-        }
-    });
-
-
-    // Camera calibration folder
-    addCameraCalibrationFolder(gui)
-
-    // Camera controls folder
-    addControlsFolder(gui)
-    
-    // Github panel
-    addGithubLink(gui)
 }
 
-*/
+let manModel = {
+    texts: {
+        'default': 'Select and upload a 3D model (in .ply format) to add it to the scene.'
+    }
+}
 
 // Init settings GUI panel
 function initGUI() {
@@ -185,9 +42,62 @@ function initGUI() {
 	  buttonReload.title = "Use this button to reset the page, remove all models, and return to the initial configuration.";
 	}
 
-    // Time evolution settings
-    const timeFolder = gui.addFolder('Models Uploaded');
+    // Model Manager 
+    addModelsManagerFolder(gui)
+    
+    // Merging Model
+    addMergingModelFolder(gui)
 
+    // Resolution settings
+    const resolutionFolder = gui.addFolder('Resolution Settings').close();
+    resolutionFolder.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution');
+    maxGaussianController = resolutionFolder.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians').onChange(() => {
+        cam.needsWorkerUpdate = true;
+        cam.updateWorker();
+    });
+    resolutionFolder.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier').onChange(() => requestRender());
+
+    // Other settings
+    const otherFolder = gui.addFolder('Other Settings').close();
+    otherFolder.add(settings, 'sortingAlgorithm', SORTING_ALGORITHMS).name('Sorting Algorithm');
+    otherFolder.add(settings, 'sortTime').name('Sort Time').disable().listen();
+    otherFolder.addColor(settings, 'bgColor').name('Background Color').onChange((value) => {
+        document.body.style.backgroundColor = value;
+        requestRender();
+    });
+    otherFolder.add(settings, 'speed', 0.01, 2, 0.01).name('Camera Speed');
+    otherFolder.add(settings, 'fov', 30, 110, 1).name('FOV').onChange((value) => {
+        cam.fov_y = value * Math.PI / 180;
+        requestRender();
+    });
+    otherFolder.add(settings, 'debugDepth').name('Show Depth Map').onChange(() => requestRender());
+
+    // Camera calibration folder
+    addCameraCalibrationFolder(gui)
+
+    // Camera controls folder
+    addControlsFolder(gui)
+    
+    // Github panel
+    addGithubLink(gui)
+
+
+}
+
+function addModelsManagerFolder(gui) {
+    const folder = gui.addFolder('Models Manager');
+    
+    /*
+    const p = document.createElement('p');
+    p.className = 'controller';
+    p.textContent = manModel.texts['default'];
+
+    // Aggiungi il paragrafo al folder
+    folder.domElement.appendChild(p);
+
+    manModel.p = p;
+    */
+    
     // Checkbox per i modelli caricati
     if (!window.modelCheckboxes) {
         window.modelCheckboxes = {};
@@ -195,7 +105,7 @@ function initGUI() {
         window.localModels.forEach((model) => {
             const checkboxName = model.name;
             settings[checkboxName] = false; // Inizializza il valore del checkbox a false
-            window.modelCheckboxes[checkboxName] = timeFolder.add(settings, checkboxName).name(checkboxName).listen().onChange(() => {
+            window.modelCheckboxes[checkboxName] = folder.add(settings, checkboxName).name(checkboxName).listen().onChange(() => {
                 if (settings[checkboxName]) {
                     //showStatusMessage(`Loading model: ${model.path}`, 'info');
                     loadScene({ file: model.path });
@@ -207,7 +117,7 @@ function initGUI() {
     }
 
     settings.uploadTimeModel = () => document.querySelector('#timeEvolutionInput').click();
-    var controllerUpload = timeFolder.add(settings, 'uploadTimeModel').name('Upload .ply file');
+    var controllerUpload = folder.add(settings, 'uploadTimeModel').name('Upload .ply file');
 	var buttonUpload = controllerUpload.domElement.querySelector('button');
 	if (buttonUpload) {
 	  buttonUpload.title = "Select and upload a 3D model (in .ply format) to add it to the scene.";
@@ -241,7 +151,7 @@ function initGUI() {
             
             // Imposta il valore della checkbox a true per selezionarla automaticamente
             settings[file.name] = true;
-            window.modelCheckboxes[file.name] = timeFolder.add(settings, file.name).name(file.name).listen().onChange(() => {
+            window.modelCheckboxes[file.name] = folder.add(settings, file.name).name(file.name).listen().onChange(() => {
                 if (settings[file.name]) {
                     // showStatusMessage(`Loading model: ${filePath}`, 'info');
                     loadScene({ file: filePath });
@@ -272,55 +182,30 @@ function initGUI() {
         }
     });
 
-    // Resolution settings
-    const resolutionFolder = gui.addFolder('Resolution Settings').close();
-    resolutionFolder.add(settings, 'renderResolution', 0.1, 1, 0.01).name('Preview Resolution');
-    maxGaussianController = resolutionFolder.add(settings, 'maxGaussians', 1, settings.maxGaussians, 1).name('Max Gaussians').onChange(() => {
-        cam.needsWorkerUpdate = true;
-        cam.updateWorker();
-    });
-    resolutionFolder.add(settings, 'scalingModifier', 0.01, 1, 0.01).name('Scaling Modifier').onChange(() => requestRender());
+}
 
-    // File upload handler
-    /*
-    gui.add(settings, 'uploadFile').name('Upload .ply file');
-    document.querySelector('#input').addEventListener('change', async (e) => {
-        if (e.target.files.length === 0) return;
-        try {
-            const file = e.target.files[0];
-            await loadScene({ file: file });
-        } catch (error) {
-            document.querySelector('#loading-text').textContent = `An error occurred when trying to read the file.`;
-            throw error;
-        }
-    });
-    */
+function addMergingModelFolder(gui) {
+    const folder = gui.addFolder('Merging Model').close();
 
-    // Other settings
-    const otherFolder = gui.addFolder('Other Settings').close();
-    otherFolder.add(settings, 'sortingAlgorithm', SORTING_ALGORITHMS).name('Sorting Algorithm');
-    otherFolder.add(settings, 'sortTime').name('Sort Time').disable().listen();
-    otherFolder.addColor(settings, 'bgColor').name('Background Color').onChange((value) => {
-        document.body.style.backgroundColor = value;
-        requestRender();
-    });
-    otherFolder.add(settings, 'speed', 0.01, 2, 0.01).name('Camera Speed');
-    otherFolder.add(settings, 'fov', 30, 110, 1).name('FOV').onChange((value) => {
-        cam.fov_y = value * Math.PI / 180;
-        requestRender();
-    });
-    otherFolder.add(settings, 'debugDepth').name('Show Depth Map').onChange(() => requestRender());
+    // Aggiungi il paragrafo
+    const p = document.createElement('p');
+    p.className = 'controller';
+    p.textContent = modMerging.texts['default'];
+    folder.domElement.appendChild(p);
+    modMerging.p = p;
 
-    // Camera calibration folder
-    addCameraCalibrationFolder(gui)
-
-    // Camera controls folder
-    addControlsFolder(gui)
-    
-    // Github panel
-    addGithubLink(gui)
-
-
+    // Aggiungi il link
+    const githubLink = document.createElement('a');
+    githubLink.style.color = 'white'; // Colore del testo
+    githubLink.style.padding = '4px 8px'; // Spazio interno (opzionale)
+    githubLink.style.marginTop = '8px'; // Spazio esterno sopra il link
+    githubLink.style.marginBottom = '8px'; // Spazio esterno sopra il link
+    githubLink.style.display = 'block'; // Per garantire che il margin funzioni correttamente
+    githubLink.href = 'https://github.com/biaperass/Gaussian-Splatting-WebGL';
+    githubLink.textContent = 'github.com/Gaussian-Splatting-WebGL';
+    githubLink.target = '_blank';
+    githubLink.rel = 'noopener noreferrer';
+    folder.domElement.appendChild(githubLink);
 }
 
 function addCameraCalibrationFolder(gui) {
