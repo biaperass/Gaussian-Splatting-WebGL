@@ -27,7 +27,11 @@ These enhancements improve interactivity and flexibility in viewing different Ga
 ### 🖼️ Models Manager GUI Preview
 
 Below is a preview of the updated **Models Manager** interface:
-![Models Manager GUI](./GUI.png)  
+
+<p align="center">
+  <img src="./GUI.png" alt="Models Manager GUI" width="300">
+</p>
+
 
 ## 🌐 Live Demo
 
