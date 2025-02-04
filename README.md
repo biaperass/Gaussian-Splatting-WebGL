@@ -13,9 +13,26 @@ for Real-Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-ga
 
 I tried to match as closely as possible the original C++/CUDA implementation (which is split into multiple repositories) so that the question "where are these calculations coming from?" can easily be answered when looking through the code.
 
-## Live Demo
+## 🆕 New Features: Models Manager Extension
 
-[https://webgl-gaussian-splatting.vercel.app/](https://webgl-gaussian-splatting.vercel.app/).
+As part of this extension, a new folder called **"Models Manager"** has been added within the existing GUI. This section introduces new functionalities for handling multiple Gaussian Splatting models:
+
+- **Upload PLY File Button**: A new button allows users to upload a `.ply` file containing a Gaussian Splatting model.
+- **Model Selection Checkboxes**: Once a `.ply` file is uploaded, checkboxes appear corresponding to each uploaded file, allowing users to select which model to visualize.
+- **Multi-Model Support**: Users can add multiple models simultaneously and switch between them using the provided checkboxes.
+- **Model Removal**: To remove all uploaded models, simply press the **"Reload Page"** button.
+
+These enhancements improve interactivity and flexibility in viewing different Gaussian Splatting models dynamically.
+
+### 🖼️ Models Manager GUI Preview
+
+Below is a preview of the updated **Models Manager** interface:
+![Models Manager GUI](./GUI.png)  
+
+## 🌐 Live Demo
+
+🚀 Experience the project in action!  
+👉 [Click here to try the live demo!](https://biaperass.github.io/Gaussian-Splatting-WebGL/)  
 
 ## Background
 
