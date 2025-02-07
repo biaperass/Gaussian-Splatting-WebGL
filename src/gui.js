@@ -202,7 +202,7 @@ function addMergingModelFolder(gui) {
     githubLink.style.marginBottom = '8px'; // Spazio esterno sopra il link
     githubLink.style.display = 'block'; // Per garantire che il margin funzioni correttamente
     githubLink.href = 'https://github.com/Martin-Martuccio/ICP-Merging';
-    githubLink.textContent = 'github.com/Gaussian-Splatting-WebGL';
+    githubLink.textContent = 'github.com/ICP-Merging';
     githubLink.target = '_blank';
     githubLink.rel = 'noopener noreferrer';
     folder.domElement.appendChild(githubLink);
