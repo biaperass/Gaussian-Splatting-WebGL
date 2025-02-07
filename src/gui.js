@@ -201,7 +201,7 @@ function addMergingModelFolder(gui) {
     githubLink.style.marginTop = '8px'; // Spazio esterno sopra il link
     githubLink.style.marginBottom = '8px'; // Spazio esterno sopra il link
     githubLink.style.display = 'block'; // Per garantire che il margin funzioni correttamente
-    githubLink.href = 'https://github.com/biaperass/Gaussian-Splatting-WebGL';
+    githubLink.href = 'https://github.com/Martin-Martuccio/ICP-Merging';
     githubLink.textContent = 'github.com/Gaussian-Splatting-WebGL';
     githubLink.target = '_blank';
     githubLink.rel = 'noopener noreferrer';
